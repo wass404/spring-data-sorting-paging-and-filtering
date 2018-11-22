@@ -11,9 +11,6 @@ import javax.validation.Valid;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 
 @RestController
 @RequestMapping("/api")
@@ -31,18 +28,39 @@ public class TestController {
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @GetMapping("/tests")
     public Page<Test> getAllProducts(@RequestParam(value = "skip") int page, @RequestParam(value = "take") int limit, @RequestParam(value = "orderby", required=false) String orderby , @RequestParam(value = "desc", required=false) boolean desc, @RequestParam(value = "filter", required=false) List filter) throws URISyntaxException {
+        System.out.println(filter);
         List<SearchCriteria> formedFilter = new ArrayList<>();
         SearchCriteria sc = new SearchCriteria();
         if(filter != null){
-            formedFilter = IntStream.iterate(0, i -> i + 4)
-                .limit(filter.size() / 4 + 1)
-                .mapToObj(i -> new SearchCriteria((String) filter.get(i), (String) filter.get(i + 1), filter.get(i + 2)))
-                .collect(Collectors.toList());
+            for(int i = 0 ;i< filter.size();i++){
+                if(i % 4 ==0){
+                    sc.setKey((String) filter.get(i));
+                }else if(i % 4 == 1){
+                    sc.setOperation((String) filter.get(i));
+
+                }else if(i % 4 ==2){
+                    sc.setValue(filter.get(i));
+                    formedFilter.add(sc);
+
+                }else{
+                    sc = new SearchCriteria();
+                }
+            }
+        }
+        for(int i=0;i<formedFilter.size();i++){
+            System.out.println(formedFilter.get(i).getOperation());
 
         }
+
         return testService.findAll(page, limit,orderby, desc,formedFilter);
     }
 
+
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @GetMapping("/testNouioui")
+    public Page<Test> fullTextSearch(@RequestParam(value = "skip") int page, @RequestParam(value = "take") int limit, @RequestParam(value = "orderby", required=false) String orderby , @RequestParam(value = "desc", required=false) boolean desc) throws URISyntaxException {
+        return testService.fullTextSearch(page, limit,orderby, desc);
+    }
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @PostMapping("/comptesfiltred")
     public List getAllFiltred(@RequestBody List<SearchCriteria> searchCriteria) throws URISyntaxException {

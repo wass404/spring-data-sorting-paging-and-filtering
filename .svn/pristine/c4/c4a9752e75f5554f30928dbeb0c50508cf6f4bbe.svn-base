@@ -55,8 +55,6 @@ public class TestService {
         for(int i=0;i<formedFilter.size();i++){
             specs.add(new TestSpecification(formedFilter.get(i)));
         }
-        System.out.println(specs);
-
         Specification sp = null ;
         if(specs.size() > 0){
             sp = Specification.where(specs.get(0)) ;
@@ -70,6 +68,28 @@ public class TestService {
     }
 
 
+    public Page<Test> fullTextSearch(int page, int limit, String sortBy, boolean desc) {
+        Pageable pageableRequest;
+        if (sortBy == null) {
+            pageableRequest = PageRequest.of(page, limit);
+
+        } else {
+            if (desc) {
+                pageableRequest = PageRequest.of(page, limit, new Sort(
+                        new Sort.Order(Sort.Direction.DESC, sortBy)
+                ));
+            } else {
+                pageableRequest = PageRequest.of(page, limit, new Sort(
+                        new Sort.Order(Sort.Direction.ASC, sortBy)
+                ));
+            }
+
+        }
+        Page<Test> users = testRepository.fullTextSearch(pageableRequest);
+        return users;
+    }
+
+
 
     public List givenLast_whenGettingListOfUsers_thenCorrect(List<SearchCriteria> searchCriteria) {
         List<TestSpecification> specs = new ArrayList<>();
@@ -77,7 +97,6 @@ public class TestService {
         for(int i=0;i<searchCriteria.size();i++){
             specs.add(new TestSpecification(searchCriteria.get(i)));
         }
-        System.out.println(specs);
             Specification sp = Specification.where(specs.get(0)) ;
         for(int j=1;j<specs.size();j++){
             sp = sp.and(specs.get(j));
